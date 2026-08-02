@@ -1,2 +1,6 @@
 # Environment variables
+cers/
 .env
+
+__pycache__/
+.vscode/
