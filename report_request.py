@@ -3,6 +3,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
+from typing import Optional
 from urllib import error, request
 
 
@@ -45,16 +46,16 @@ def execution_report_v2(
     service: str,
     execution_type: str,
     job_name: str,
-    local_file_path: Path | None,
-    remote_absolute_path: str | None,
-    remote_relative_path: str | None,
-    error_message: str | None,
+    local_file_path: Optional[Path],
+    remote_absolute_path: Optional[str],
+    remote_relative_path: Optional[str],
+    error_message: Optional[str],
     report_file_path: Path,
     settings,
 ) -> None:
-    report_url = os.getenv("EXECUTION_REPORT_V2_URL", "").strip()
-    api_key = os.getenv("EXECUTION_REPORT_API_KEY", "").strip()
-    if not report_url or not api_key:
+    # report_url = os.getenv("EXECUTION_REPORT_V2_URL", "").strip()
+    # api_key = os.getenv("EXECUTION_REPORT_API_KEY", "").strip()
+    if not settings.report_url or not settings.api_key:
         print(
             f"[report/v2] skipped for node={node_name}: missing EXECUTION_REPORT_V2_URL or EXECUTION_REPORT_API_KEY"
         )
@@ -112,7 +113,7 @@ def execution_report_v2(
         )
 
 
-    req = _request_post(report_url, payload, api_key)
+    req = _request_post(settings.report_url, payload, settings.api_key)
     status_code, response_body = req
     print(f"[report/v2] node={node_name} sent (status={status_code})")
     if status_code < 200 or status_code >= 300:

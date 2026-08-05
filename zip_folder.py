@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Optional
 import shutil
 
-def zip_downloaded_folder(downloaded_folder: Path, archive_name: str | None = None) -> Path:
+def zip_downloaded_folder(downloaded_folder: Path, archive_name: Optional[str] = None) -> Path:
     if not downloaded_folder.exists():
         raise FileNotFoundError(f"Le dossier n'existe pas : {downloaded_folder}")
 

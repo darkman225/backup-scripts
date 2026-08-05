@@ -2,11 +2,15 @@ import os
 import shutil
 from pathlib import Path
 
-def keep_last_5_items(folder_path: str) -> None:
-    folder = Path(folder_path)
+def keep_last_5_items(path_to_manage: str) -> None:
+    target_path = Path(path_to_manage)
 
-    if not folder.exists() or not folder.is_dir():
-        raise NotADirectoryError(f"Le dossier est introuvable : {folder_path}")
+    if target_path.is_file():
+        folder = target_path.parent
+    elif target_path.is_dir():
+        folder = target_path
+    else:
+        raise NotADirectoryError(f"Le chemin est introuvable ou invalide : {path_to_manage}")
 
     # Récupère tous les éléments du dossier
     items = [item for item in folder.iterdir()]

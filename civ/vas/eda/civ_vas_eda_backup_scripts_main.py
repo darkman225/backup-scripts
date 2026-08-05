@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import json
 import sys
+from typing import Optional
 
 from backup_scripts.report_request import execution_report_v2
 from remote_ressource import download_remote_resource, get_remote_resource
@@ -34,8 +35,8 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
     remote_yoeda_dir = settings.remote_dir+"/yoeda"
     remote_abeda_dir = settings.remote_dir+"/abeda"
 
-    yoeda_local_path: Path | None = None
-    abeda_local_path: Path | None = None
+    yoeda_local_path: Optional[Path] = None
+    abeda_local_path: Optional[Path] = None
 
     job_name = "civ_vas_eda_backup"
 
@@ -73,7 +74,7 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
             )
 
             yoeda_started_at = datetime.now(timezone.utc).isoformat()
-            yoeda_error: str | None = None
+            yoeda_error: Optional[str] = None
             try:
                 if yoeda_lastest_data_selected is None or is_modified_older_than_days(yoeda_lastest_data_selected.modified_at_epoch, 2):
                     if settings.remote_command:
@@ -146,7 +147,7 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
                 
 
             abeda_started_at = datetime.now(timezone.utc).isoformat()
-            abeda_error: str | None = None
+            abeda_error: Optional[str] = None
             try:
                 if abeda_lastest_data_selected is None or is_modified_older_than_days(abeda_lastest_data_selected.modified_at_epoch, 2):
                     if settings.remote_command:

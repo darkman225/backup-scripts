@@ -33,6 +33,8 @@ class Settings:
     remote_command: str
     file_patterns: list[str]
     local_output_dir: Path
+    report_url: str
+    report_api_key: str
 
 
 def load_settings(env_path: Optional[Path] = None) -> Settings:
@@ -56,4 +58,6 @@ def load_settings(env_path: Optional[Path] = None) -> Settings:
         remote_command=_env("REMOTE_COMMAND", ""),
         file_patterns=patterns,
         local_output_dir=local_output_dir,
+        report_url=_env("EXECUTION_REPORT_V2_URL", required=True),
+        report_api_key=_env("EXECUTION_REPORT_API_KEY", required=True),
     )
