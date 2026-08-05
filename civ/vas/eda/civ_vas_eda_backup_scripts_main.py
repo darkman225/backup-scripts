@@ -37,6 +37,8 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
     yoeda_local_path: Path | None = None
     abeda_local_path: Path | None = None
 
+    job_name = "civ_vas_eda_backup"
+
     report: dict = {
         "run_id": run_id,
         "started_at": datetime.now(timezone.utc).isoformat(),
@@ -121,6 +123,10 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
                 execution_report_v2(
                     run_id=run_id,
                     node_name="yoeda",
+                    country_code="CIV",
+                    service="VAS",
+                    execution_type='BK',
+                    job_name=job_name,
                     started_at=yoeda_started_at,
                     finished_at=current_finished_at,
                     status="FAILED" if yoeda_error else "SUCCESS",
@@ -195,7 +201,7 @@ def download_remote_backup(use_patterns: bool = False, env_path: str = "./././ce
                     country_code="CIV",
                     service="VAS",
                     execution_type='BK',
-                    job_name="civ_vas_eda_backup",
+                    job_name=job_name,
                     local_file_path=abeda_local_path,
                     remote_absolute_path=(abeda_lastest_data_selected.absolute_path if abeda_lastest_data_selected else None),
                     remote_relative_path=(abeda_lastest_data_selected.relative_path if abeda_lastest_data_selected else None),

@@ -5,19 +5,23 @@ import os
 from pathlib import Path
 from urllib import error, request
 
+
+def _storage_path_from_local_root(file_path: Path, local_root: Path) -> str:
+    try:
+        return str(file_path.resolve().relative_to(local_root.resolve())).replace("\\", "/")
+    except ValueError:
+        return file_path.name
+
 def _artifact_from_path(file_path: Path, local_root: Path, remote_absolute_path: str | None, remote_relative_path: str | None) -> dict:
     stat = file_path.stat()
     file_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
 
-    try:
-        storage_path = str(file_path.resolve().relative_to(local_root.resolve())).replace("\\", "/")
-    except ValueError:
-        storage_path = file_path.name
+    storage_path = _storage_path_from_local_root(file_path, local_root)
 
     return {
         "role": "BACKUP_ARCHIVE",
         "storageBackend": os.getenv("EXECUTION_REPORT_STORAGE_BACKEND", "LOCAL_FS"),
-        "storageRootAlias": "local_backup",
+        "storageRootAlias": os.getenv("EXECUTION_REPORT_STORAGE_ROOT_ALIAS", "local_backup"),
         "storagePath": storage_path,
         "fileName": file_path.name,
         "fileType": file_type,
@@ -56,9 +60,6 @@ def execution_report_v2(
         )
         return
 
-    country_code = country_code.strip() or "CI"
-    execution_type = execution_type.strip() or "BK"
-
     artifacts: list[dict] = []
     if local_file_path is not None and local_file_path.exists() and local_file_path.is_file():
         artifacts.append(
@@ -76,7 +77,7 @@ def execution_report_v2(
                 "role": "EXECUTION_REPORT",
                 "storageBackend": os.getenv("EXECUTION_REPORT_STORAGE_BACKEND", "LOCAL_FS"),
                 "storageRootAlias": os.getenv("EXECUTION_REPORT_STORAGE_ROOT_ALIAS", "local_backup"),
-                "storagePath": str(report_file_path.resolve().relative_to(settings.local_output_dir.resolve())).replace("\\", "/"),
+                "storagePath": _storage_path_from_local_root(report_file_path, settings.local_output_dir),
                 "fileName": report_file_path.name,
                 "fileType": "application/json",
                 "sizeBytes": report_file_path.stat().st_size,
@@ -95,7 +96,7 @@ def execution_report_v2(
         "resultSummary": error_message or f"Backup node {node_name} completed.",
         "run": {
             "runId": f"{run_id}-{node_name}",
-            "jobName": job_name,  # "civ_vas_eda_backup",
+            "jobName": job_name,
             "environment": os.getenv("APP_ENV", "prod"),
             "scriptVersion": os.getenv("SCRIPT_VERSION", "1.0.0"),
             "hostName": os.getenv("HOSTNAME", "localhost"),
@@ -112,7 +113,12 @@ def execution_report_v2(
 
 
     req = _request_post(report_url, payload, api_key)
-    print(f"[report/v2] node={node_name} sent (status={req[0]})")
+    status_code, response_body = req
+    print(f"[report/v2] node={node_name} sent (status={status_code})")
+    if status_code < 200 or status_code >= 300:
+        raise RuntimeError(
+            f"report/v2 failed for node={node_name}: status={status_code}, body={response_body[:400]}"
+        )
 
 
 def _request_header(api_key: str) -> dict:
